@@ -1,0 +1,34 @@
+{{#isInteger}}{{!
+    }}Integer.valueOf(
+{{/isInteger}}
+{{#isLong}}{{!
+    }}Long.valueOf(
+{{/isLong}}
+{{#isFloat}}{{!
+    }}Float.valueOf(
+{{/isFloat}}
+{{#isDouble}}{{!
+    }}Double.valueOf(
+{{/isDouble}}
+{{#isDecimal}}{{!
+    }}new BigDecimal(
+{{/isDecimal}}
+{{#isPathParam}}{{!
+    }}request.path().param("{{baseName}}")
+{{/isPathParam}}
+{{#isInteger}}{{!
+    }})
+{{/isInteger}}
+{{#isLong}}{{!
+    }})
+{{/isLong}}
+{{#isFloat}}{{!
+    }})
+{{/isFloat}}
+{{#isDouble}}{{!
+    }})
+{{/isDouble}}
+{{#isDecimal}}{{!
+    }})
+{{/isDecimal}}{{!
+}};

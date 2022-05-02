@@ -1,0 +1,5 @@
+{{#isBodyParam}}{{.}}
+{{#required}}
+        Objects.requireNonNull({{paramName}});
+{{/required}}
+{{/isBodyParam}}

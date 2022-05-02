@@ -1,0 +1,59 @@
+package {{package}};
+
+{{#imports}}import {{import}};
+{{/imports}}
+
+import java.util.Collections;
+import java.util.logging.Logger;
+
+import javax.json.Json;
+import javax.json.JsonBuilderFactory;
+import javax.json.JsonObject;
+
+import io.helidon.config.Config;
+import io.helidon.webserver.Routing;
+import io.helidon.webserver.ServerRequest;
+import io.helidon.webserver.ServerResponse;
+import io.helidon.webserver.Service;
+
+{{#operations}}
+public class {{classname}} implements Service {
+
+    private static final Logger LOGGER = Logger.getLogger({{classname}}.class.getName());
+    private static final JsonBuilderFactory JSON = Json.createBuilderFactory(Collections.emptyMap());
+    private final Config config;
+
+    GreetService(Config config) {
+        this.config = config;
+    }
+
+    /**
+    * A service registers itself by updating the routing rules.
+    * @param rules the routing rules.
+    */
+    @Override
+    public void update(Routing.Rules rules) {
+{{#operation}}
+        rules.{{#lambda.lowercase}}{{httpMethod}}{{/lambda.lowercase}}("{{{path}}}", {{#allParams}}{{!
+        }}{{#isBodyParam}}Handler.create({{classname}}.class, this::{{{operationId}}})){{/isBodyParam}}{{!
+        }}{{^isBodyParam}}this::{{{operationId}}}){{/isBodyParam}}{{/allParams}};
+{{/operation}}
+    }
+
+{{#operation}}
+    /**
+    * {{httpMethod}} {{{path}}}{{#summary}} : {{.}}{{/summary}}.
+    * @param request the server request
+    * @param response the server response
+    */
+    public void {{{operationId}}}(ServerRequest request, ServerResponse response{{#allParams}}{{#isBodyParam}}, {{{dataType}}} {{paramName}}{{/isBodyParam}}{{/allParams}}) throws Exception {
+{{#allParams}}
+    {{>queryParams}}{{>pathParams}}{{>headerParams}}{{>bodyParams}}{{>formParams}}{{>cookieParams}}{{^-last}},{{/-last}}
+{{/allParams}}
+        JsonObject returnObject = JSON.createObjectBuilder().build();
+        response.send(returnObject);
+    }
+
+{{/operation}}
+}
+{{/operations}}

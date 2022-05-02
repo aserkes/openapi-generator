@@ -1,0 +1,28 @@
+{{{dataType}}}
+{{.}}
+{{#isInteger}}
+    !!!{{{dataType}}}!!!    Integer
+{{/isInteger}}
+{{#isLong}}{{.}}
+    !!!{{{dataType}}}!!!    Long
+{{/isLong}}
+{{#isFloat}}{{.}}
+    !!!{{{dataType}}}!!!    Float
+{{/isFloat}}
+{{#isDouble}}{{.}}
+    !!!{{{dataType}}}!!!    Double
+{{/isDouble}}
+{{#isDecimal}}{{.}}
+    !!!{{{dataType}}}!!!    BigDecimal
+{{/isDecimal}}
+{{^isInteger}}
+    {{^isLong}}
+        {{^isFloat}}
+            {{^isDouble}}
+                {{^isDecimal}}
+                    !!!{{{dataType}}}!!!    String
+                {{/isDecimal}}
+            {{/isDouble}}
+        {{/isFloat}}
+    {{/isLong}}
+{{/isInteger}}
