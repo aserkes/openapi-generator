@@ -1,5 +1,5 @@
 {{#isPathParam}}
-    {{#useBeanValidation}}{{>beanValidationPathParams}}{{/useBeanValidation}}
-    @PathVariable("{{baseName}}")
-{{>dateTimeParam}} {{>dataType}} {{paramName}} = {{>paramValue}}
+//TODO remove    @PathVariable("{{baseName}}")
+{{>dateTimeParam}}{{>dataType}} {{paramName}} = {{>paramValue}}
+{{#useBeanValidation}}{{>beanValidationPathParams}}{{/useBeanValidation}}
 {{/isPathParam}}

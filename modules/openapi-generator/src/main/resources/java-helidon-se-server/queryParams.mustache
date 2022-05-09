@@ -1,13 +1,13 @@
 {{#isQueryParam}}
+    {{>dateTimeParam}} {{>dataType}} {{paramName}} = {{>paramValue}}
     {{#useBeanValidation}}
         {{>beanValidationQueryParams}}
     {{/useBeanValidation}}
     {{>paramDoc}}
     {{#useBeanValidation}}
- @Valid
+        //TODO REMOVE  @Valid
     {{/useBeanValidation}}
     {{^isModel}}
- @RequestParam(value = {{#isMap}}""{{/isMap}}{{^isMap}}"{{baseName}}"{{/isMap}}{{#required}}, required = true{{/required}}{{^required}}, required = false{{/required}}{{#defaultValue}}, defaultValue = "{{{.}}}"{{/defaultValue}})
+        //TODO REMOVE @RequestParam(value = {{#isMap}}""{{/isMap}}{{^isMap}}"{{baseName}}"{{/isMap}}{{#required}}, required = true{{/required}}{{^required}}, required = false{{/required}}{{#defaultValue}}, defaultValue = "{{{.}}}"{{/defaultValue}})
     {{/isModel}}
-    {{>dateTimeParam}} {{>dataType}} {{paramName}} = {{>paramValue}}
 {{/isQueryParam}}

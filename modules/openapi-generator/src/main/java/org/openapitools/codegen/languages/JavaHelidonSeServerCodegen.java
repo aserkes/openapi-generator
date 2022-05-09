@@ -26,6 +26,8 @@ import java.util.Locale;
 import java.util.Map;
 
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.servers.Server;
 import org.apache.commons.lang3.BooleanUtils;
 import org.openapitools.codegen.CliOption;
 import org.openapitools.codegen.CodegenConstants;
@@ -67,6 +69,7 @@ public class JavaHelidonSeServerCodegen extends AbstractJavaCodegen
     protected String title = "Helidon SE Server";
     protected String implFolder = "src/main/java";
     protected String basePackage = "org.openapitools";
+    protected String parentVersion = "2.5.0";
 
     public JavaHelidonSeServerCodegen() {
         super();
@@ -88,6 +91,7 @@ public class JavaHelidonSeServerCodegen extends AbstractJavaCodegen
         updateOption(CodegenConstants.ARTIFACT_ID, this.getArtifactId());
         updateOption(CodegenConstants.API_PACKAGE, apiPackage);
         updateOption(CodegenConstants.MODEL_PACKAGE, modelPackage);
+//        updateOption(BASE_PACKAGE, basePackage);
         updateOption(DATE_LIBRARY, this.getDateLibrary());
 
         apiTestTemplateFiles.clear(); // TODO: add test template
@@ -212,13 +216,13 @@ public class JavaHelidonSeServerCodegen extends AbstractJavaCodegen
         }
         writePropertyBack(USE_BEANVALIDATION, true);//useBeanValidation
 
-        if (!additionalProperties.containsKey(BASE_PACKAGE)
-                && additionalProperties.containsKey(CodegenConstants.INVOKER_PACKAGE)) {
-            // set invokerPackage as basePackage:
-            this.setBasePackage((String) additionalProperties.get(CodegenConstants.INVOKER_PACKAGE));
-            additionalProperties.put(BASE_PACKAGE, basePackage);
-            LOGGER.info("Set base package to invoker package ({})", basePackage);
-        }
+//        if (!additionalProperties.containsKey(BASE_PACKAGE)
+//                && additionalProperties.containsKey(CodegenConstants.INVOKER_PACKAGE)) {
+//            // set invokerPackage as basePackage:
+//            this.setBasePackage((String) additionalProperties.get(CodegenConstants.INVOKER_PACKAGE));
+//            additionalProperties.put(BASE_PACKAGE, basePackage);
+//            LOGGER.info("Set base package to invoker package ({})", basePackage);
+//        }
 
         if (additionalProperties.containsKey(BASE_PACKAGE)) {
             this.setBasePackage((String) additionalProperties.get(BASE_PACKAGE));
@@ -226,9 +230,20 @@ public class JavaHelidonSeServerCodegen extends AbstractJavaCodegen
             additionalProperties.put(BASE_PACKAGE, basePackage);
         }
 
+        if (!additionalProperties.containsKey(CodegenConstants.PARENT_VERSION)) {
+            additionalProperties.put(CodegenConstants.PARENT_VERSION, parentVersion);
+        }
+
         supportingFiles.add(new SupportingFile("main.mustache",
                 (sourceFolder + File.separator + basePackage).replace(".", java.io.File.separator),
                 "Main.java"));
+
+        supportingFiles.add(new SupportingFile("ValidatorUtils.mustache",
+                (sourceFolder + File.separator + apiPackage).replace(".", java.io.File.separator),
+                "ValidatorUtils.java"));
+
+        importMapping.put("Handler", "io.helidon.webserver.Handler");
+//        importMapping.put("Objects", "java.util.Objects");
 
 //        if (additionalProperties.containsKey(PERFORM_BEANVALIDATION)) {
 //            this.setPerformBeanValidation(convertPropertyToBoolean(PERFORM_BEANVALIDATION));
@@ -349,4 +364,23 @@ public class JavaHelidonSeServerCodegen extends AbstractJavaCodegen
         final String host = URLPathUtils.getHost(openAPI, serverVariableOverrides());
     }
 
+    /*
+     * Add dynamic imports based on the parameters and vendor extensions of an operation.
+     * The imports are expanded by the mustache {{import}} tag available to model and api
+     * templates.
+     */
+    @Override
+    public CodegenOperation fromOperation(String path, String httpMethod, Operation operation, List<Server> servers) {
+        CodegenOperation codegenOperation = super.fromOperation(path, httpMethod, operation, servers);
+        if (codegenOperation.bodyParam != null) {
+            codegenOperation.imports.add("Handler");
+        }
+        if (codegenOperation.pathParams.size() > 0) {
+            codegenOperation.imports.add("Objects");
+        }
+        if (codegenOperation.queryParams.size() > 0) {
+            codegenOperation.imports.add("List");
+        }
+        return codegenOperation;
+    }
 }

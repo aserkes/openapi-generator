@@ -1,1 +1,5 @@
-{{#isHeaderParam}}{{>paramDoc}} @RequestHeader(value = "{{baseName}}", required = {{#required}}true{{/required}}{{^required}}false{{/required}}{{#defaultValue}}, defaultValue = "{{{.}}}"{{/defaultValue}}){{>dateTimeParam}} {{>dataType}} {{paramName}}{{/isHeaderParam}}
+{{#isHeaderParam}}
+    {{>paramDoc}}
+//TODO REMOVE    @RequestHeader(value = "{{baseName}}", required = {{#required}}true{{/required}}{{^required}}false{{/required}}{{#defaultValue}}, defaultValue = "{{{.}}}"{{/defaultValue}})
+{{>dateTimeParam}} {{>dataType}} {{paramName}} = {{>paramValue}}
+{{/isHeaderParam}}

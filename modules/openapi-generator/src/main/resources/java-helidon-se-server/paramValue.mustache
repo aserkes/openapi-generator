@@ -1,34 +1,8 @@
-{{#isInteger}}{{!
-    }}Integer.valueOf(
-{{/isInteger}}
-{{#isLong}}{{!
-    }}Long.valueOf(
-{{/isLong}}
-{{#isFloat}}{{!
-    }}Float.valueOf(
-{{/isFloat}}
-{{#isDouble}}{{!
-    }}Double.valueOf(
-{{/isDouble}}
-{{#isDecimal}}{{!
-    }}new BigDecimal(
-{{/isDecimal}}
-{{#isPathParam}}{{!
-    }}request.path().param("{{baseName}}")
-{{/isPathParam}}
-{{#isInteger}}{{!
-    }})
-{{/isInteger}}
-{{#isLong}}{{!
-    }})
-{{/isLong}}
-{{#isFloat}}{{!
-    }})
-{{/isFloat}}
-{{#isDouble}}{{!
-    }})
-{{/isDouble}}
-{{#isDecimal}}{{!
-    }})
-{{/isDecimal}}{{!
-}};
+{{#isPrimitiveType}}{{!
+    }}{{#isDecimal}}new BigDecimal({{/isDecimal}}{{!
+    }}{{^isDecimal}}{{{dataType}}}.valueOf({{/isDecimal}}{{!
+}}{{/isPrimitiveType}}{{!
+}}{{#isPathParam}}request.path().param("{{baseName}}"){{/isPathParam}}{{!
+}}{{#isQueryParam}}request.queryParams().toMap().get("{{baseName}}"){{/isQueryParam}}{{!
+}}{{#isHeaderParam}}request.headers().value("{{baseName}}").orElse(null){{/isHeaderParam}}{{!
+}}{{#isPrimitiveType}}){{/isPrimitiveType}};
