@@ -4,6 +4,7 @@ package {{package}};
 {{/imports}}
 
 import java.util.Collections;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 import io.helidon.common.GenericType;
@@ -17,10 +18,10 @@ import io.helidon.webserver.Service;
 {{#operations}}
 public abstract class {{classname}} implements Service {
 
-    private static final Logger LOGGER = Logger.getLogger({{classname}}.class.getName());
-    private final Config config;
+    protected static final Logger LOGGER = Logger.getLogger({{classname}}.class.getName());
+    protected final Config config;
 
-    {{classname}}(Config config) {
+    public {{classname}}(Config config) {
         this.config = config;
     }
 
@@ -36,27 +37,33 @@ public abstract class {{classname}} implements Service {
         }}{{^bodyParam}}this::{{{operationId}}}){{/bodyParam}};
 {{/operation}}
     }
+{{!
+}}  {{#isFormParamsFunctions}}{{>formParamsFunctions}}{{/isFormParamsFunctions}}
 
 {{#operation}}
     /**
     * {{httpMethod}} {{{path}}}{{#summary}} : {{.}}{{/summary}}.
     * @param request the server request
-    * @param response the server response
+    * @param response the server response{{#allParams}}{{#isBodyParam}}{{#isModel}}
+    * @param {{paramName}} {{{description}}}{{^description}}{{paramName}}{{/description}} {{/isModel}}{{/isBodyParam}}{{/allParams}}
     */
     public void {{{operationId}}}(ServerRequest request, ServerResponse response{{#allParams}}{{#isBodyParam}}{{#isModel}}, {{{dataType}}} {{paramName}}{{/isModel}}{{/isBodyParam}}{{/allParams}}) {
-    //Single.create({{^hasParams}}Single.empty(){{/hasParams}}{{#hasParams}}{{^bodyParam}}Single.empty(){{/bodyParam}}{{#bodyParam}}{{^isModel}}request.content().as(new GenericType<{{{dataType}}}>() { }){{/isModel}}{{#isModel}}Single.empty(){{/isModel}}{{/bodyParam}}{{/hasParams}})
-    {{#allParams}}{{>queryParams}}{{>pathParams}}{{>headerParams}}{{>bodyParams}}{{>formParams}}{{>cookieParams}}{{/allParams}}{{!
-        }}{{#allParams}}{{#isBodyParam}}{{^isModel}}request.content().as(new GenericType<{{{dataType}}}>() { })
-            .thenAccept({{paramName}} -> {
-                {{/isModel}}Objects.requireNonNull({{paramName}});
-        {{^isModel}}        {{/isModel}}{{/isBodyParam}}{{/allParams}}handle{{#lambda.titlecase}}{{{operationId}}}{{/lambda.titlecase}}(request, response{{#allParams}}, {{paramName}}{{/allParams}}){{#allParams}}{{#isBodyParam}}{{^isModel}};
+        {{>formParamsInitial}}
+        Single.create({{^hasParams}}Single.empty(){{/hasParams}}{{#hasParams}}{{^bodyParam}}{{#formParams}}{{#-first}}formSingle{{/-first}}{{/formParams}}{{^formParams}}Single.empty(){{/formParams}}{{/bodyParam}}{{#bodyParam}}{{^isModel}}request.content().as(new GenericType<{{{dataType}}}>() { }){{/isModel}}{{#isModel}}Single.empty(){{/isModel}}{{/bodyParam}}{{/hasParams}})
+            .thenAccept({{#bodyParam}}{{^isModel}}{{paramName}}{{/isModel}}{{#isModel}}val{{/isModel}}{{/bodyParam}}{{^bodyParam}}val{{/bodyParam}} -> {
+                {{#allParams}}{{> queryParams }}{{> pathParams }}{{>headerParams}}{{>bodyParams}}{{>formParams}}{{>cookieParams}}{{/allParams}}
+                handle{{#lambda.titlecase}}{{{operationId}}}{{/lambda.titlecase}}(request, response{{#allParams}}, {{paramName}}{{/allParams}});
             })
-            .exceptionally(throwable -> handleError(request, response, throwable)){{/isModel}}{{/isBodyParam}}{{/allParams}};
+            .exceptionally(throwable -> handleError(request, response, throwable));
     }
 
-    abstract void handle{{#lambda.titlecase}}{{{operationId}}}{{/lambda.titlecase}}(ServerRequest request, ServerResponse response{{#allParams}}, {{{dataType}}} {{paramName}}{{/allParams}});
+    abstract void handle{{#lambda.titlecase}}{{{operationId}}}{{/lambda.titlecase}}(ServerRequest request, ServerResponse response{{#allParams}}, {{>dataType}} {{paramName}}{{/allParams}});
 
 {{/operation}}
-    abstract Void handleError(ServerRequest request, ServerResponse response, Throwable throwable);
+    abstract Void handleError(ServerRequest request, ServerResponse response, Throwable throwable);{{!
+}}{{#isFormCollector}}
+//+++++++++++++isFormCollector++++++++++++{{/isFormCollector}}{{!
+}}{{#isByteCollector}}
+//+++++++++++++isByteCollector++++++++++++{{/isByteCollector}}
 }
 {{/operations}}

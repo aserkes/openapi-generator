@@ -27,12 +27,14 @@ import java.util.Map;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.servers.Server;
 import org.apache.commons.lang3.BooleanUtils;
 import org.openapitools.codegen.CliOption;
 import org.openapitools.codegen.CodegenConstants;
 import org.openapitools.codegen.CodegenModel;
 import org.openapitools.codegen.CodegenOperation;
+import org.openapitools.codegen.CodegenParameter;
 import org.openapitools.codegen.CodegenProperty;
 import org.openapitools.codegen.CodegenType;
 import org.openapitools.codegen.SupportingFile;
@@ -50,8 +52,6 @@ import org.openapitools.codegen.utils.URLPathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.openapitools.codegen.languages.features.BeanValidationFeatures.USE_BEANVALIDATION;
-import static org.openapitools.codegen.languages.features.SwaggerUIFeatures.USE_SWAGGER_UI;
 import static org.openapitools.codegen.utils.StringUtils.camelize;
 
 
@@ -82,17 +82,11 @@ public class JavaHelidonSeServerCodegen extends AbstractJavaCodegen
         apiPackage = "org.openapitools.api";
         modelPackage = "org.openapitools.model";
 
-        if (!additionalProperties.containsKey(DATE_LIBRARY)) {
-            setDateLibrary("java8");
-        }
-
         // clioOptions default redefinition need to be updated
         updateOption(CodegenConstants.INVOKER_PACKAGE, this.getInvokerPackage());
         updateOption(CodegenConstants.ARTIFACT_ID, this.getArtifactId());
         updateOption(CodegenConstants.API_PACKAGE, apiPackage);
         updateOption(CodegenConstants.MODEL_PACKAGE, modelPackage);
-//        updateOption(BASE_PACKAGE, basePackage);
-        updateOption(DATE_LIBRARY, this.getDateLibrary());
 
         apiTestTemplateFiles.clear(); // TODO: add test template
 
@@ -106,63 +100,13 @@ public class JavaHelidonSeServerCodegen extends AbstractJavaCodegen
 
         cliOptions.add(new CliOption(BASE_PACKAGE, "base package (invokerPackage) for generated code")
                 .defaultValue(this.getBasePackage()));
-
-
-//        cliOptions
-//                .add(CliOption.newBoolean(USE_BEANVALIDATION, "Use BeanValidation API annotations", true));
-//        cliOptions.add(CliOption.newBoolean(USE_SWAGGER_UI,
-//                "Open the OpenApi specification in swagger-ui. Will also import and configure needed dependencies",
-//                true));
-//        cliOptions.add(CliOption.newBoolean(PERFORM_BEANVALIDATION,
-//                "Use Bean Validation Impl. to perform BeanValidation", performBeanValidation));
     }
-
-//========================================================================
-
-//    boolean useOptional = false;
-//    @Override
-//    public void setUseOptional(boolean useOptional) {
-//        this.useOptional = useOptional;
-//    }
-
-//    boolean performBeanValidation = true;
-//    @Override
-//    public void setPerformBeanValidation(boolean performBeanValidation) {
-//        this.performBeanValidation = performBeanValidation;
-//    }
-
-//    boolean useSwaggerUI = true;
-//    @Override
-//    public void setUseSwaggerUI(boolean useSwaggerUI) {
-//        this.useSwaggerUI = useSwaggerUI;
-//    }
-
-
-//    public List<DocumentationProvider> supportedDocumentationProvider() {
-//        List<DocumentationProvider> supportedProviders = new ArrayList<>();
-//        supportedProviders.add(DocumentationProvider.NONE);
-//        supportedProviders.add(DocumentationProvider.SOURCE);
-//        supportedProviders.add(DocumentationProvider.SPRINGFOX);
-//        supportedProviders.add(DocumentationProvider.SPRINGDOC);
-//        return supportedProviders;
-//    }
-//
-//    @Override
-//    public List<AnnotationLibrary> supportedAnnotationLibraries() {
-//        List<AnnotationLibrary> supportedLibraries = new ArrayList<>();
-//        supportedLibraries.add(AnnotationLibrary.NONE);
-//        supportedLibraries.add(AnnotationLibrary.SWAGGER1);
-//        supportedLibraries.add(AnnotationLibrary.SWAGGER2);
-//        return supportedLibraries;
-//    }
 
     protected boolean useBeanValidation = true;
     @Override
     public void setUseBeanValidation(boolean useBeanValidation) {
         this.useBeanValidation = useBeanValidation;
     }
-
-//=====================================
 
     @Override
     public CodegenType getTag() {
@@ -182,6 +126,11 @@ public class JavaHelidonSeServerCodegen extends AbstractJavaCodegen
     @Override
     public void processOpts() {
         super.processOpts();
+
+        if (!additionalProperties.containsKey(DATE_LIBRARY)) {
+            setDateLibrary("java8");
+        }
+
 //todo !!!LAST!!! maybe need to remove this line
 //        apiTemplateFiles.remove("api.mustache");
 //todo !!!LAST!!!
@@ -199,30 +148,22 @@ public class JavaHelidonSeServerCodegen extends AbstractJavaCodegen
         supportingFiles.add(new SupportingFile("mainTest.mustache",
                 (testFolder + File.separator + basePackage).replace(".", java.io.File.separator),
                 "MainTest.java"));
-//todo !!!REMOVE!!!
-        supportingFiles.add(new SupportingFile("interface.mustache", (String.format(Locale.ROOT, "src.main.java.%s", apiPackage)).replace(".", java.io.File.separator), "PathHandlerInterface.java"));
-//todo !!!REMOVE!!!
-        supportingFiles.add(new SupportingFile("handler.mustache", (String.format(Locale.ROOT, "src.main.java.%s", apiPackage)).replace(".", java.io.File.separator), "PathHandlerProvider.java"));
-        supportingFiles.add(new SupportingFile("service.mustache", ("src.main.resources.META-INF.services").replace(".", java.io.File.separator), "com.networknt.server.HandlerProvider"));
+////todo !!!REMOVE!!!
+//        supportingFiles.add(new SupportingFile("interface.mustache", (String.format(Locale.ROOT, "src.main.java.%s", apiPackage)).replace(".", java.io.File.separator), "PathHandlerInterface.java"));
+////todo !!!REMOVE!!!
+//        supportingFiles.add(new SupportingFile("handler.mustache", (String.format(Locale.ROOT, "src.main.java.%s", apiPackage)).replace(".", java.io.File.separator), "PathHandlerProvider.java"));
+//        supportingFiles.add(new SupportingFile("service.mustache", ("src.main.resources.META-INF.services").replace(".", java.io.File.separator), "com.networknt.server.HandlerProvider"));
 
         // configuration files
-        supportingFiles.add(new SupportingFile("server.json", ("src.main.resources.config").replace(".", java.io.File.separator), "server.json"));
-        supportingFiles.add(new SupportingFile("security.json", ("src.main.resources.config").replace(".", java.io.File.separator), "security.json"));
-        supportingFiles.add(new SupportingFile("primary.crt", ("src.main.resources.config.oauth").replace(".", java.io.File.separator), "primary.crt"));
+//        supportingFiles.add(new SupportingFile("server.json", ("src.main.resources.config").replace(".", java.io.File.separator), "server.json"));
+//        supportingFiles.add(new SupportingFile("security.json", ("src.main.resources.config").replace(".", java.io.File.separator), "security.json"));
+//        supportingFiles.add(new SupportingFile("primary.crt", ("src.main.resources.config.oauth").replace(".", java.io.File.separator), "primary.crt"));
 
         //============
         if (additionalProperties.containsKey(USE_BEANVALIDATION)) {
             this.setUseBeanValidation(convertPropertyToBoolean(USE_BEANVALIDATION));
         }
         writePropertyBack(USE_BEANVALIDATION, true);//useBeanValidation
-
-//        if (!additionalProperties.containsKey(BASE_PACKAGE)
-//                && additionalProperties.containsKey(CodegenConstants.INVOKER_PACKAGE)) {
-//            // set invokerPackage as basePackage:
-//            this.setBasePackage((String) additionalProperties.get(CodegenConstants.INVOKER_PACKAGE));
-//            additionalProperties.put(BASE_PACKAGE, basePackage);
-//            LOGGER.info("Set base package to invoker package ({})", basePackage);
-//        }
 
         if (additionalProperties.containsKey(BASE_PACKAGE)) {
             this.setBasePackage((String) additionalProperties.get(BASE_PACKAGE));
@@ -238,12 +179,26 @@ public class JavaHelidonSeServerCodegen extends AbstractJavaCodegen
                 (sourceFolder + File.separator + basePackage).replace(".", java.io.File.separator),
                 "Main.java"));
 
-        supportingFiles.add(new SupportingFile("ValidatorUtils.mustache",
+        supportingFiles.add(new SupportingFile("validatorUtils.mustache",
                 (sourceFolder + File.separator + apiPackage).replace(".", java.io.File.separator),
                 "ValidatorUtils.java"));
 
+        supportingFiles.add(new SupportingFile("package-info.mustache",
+                (sourceFolder + File.separator + basePackage).replace(".", java.io.File.separator),
+                "package-info.java"));
+
         importMapping.put("Handler", "io.helidon.webserver.Handler");
-//        importMapping.put("Objects", "java.util.Objects");
+        importMapping.put("Map", "java.util.Map");
+        importMapping.put("HashMap", "java.util.HashMap");
+        importMapping.put("InputStream", "java.io.InputStream");
+        importMapping.put("ReadableBodyPart", "io.helidon.media.multipart.ReadableBodyPart");
+        importMapping.put("ArrayList", "java.util.ArrayList");
+        importMapping.put("ByteArrayOutputStream", "java.io.ByteArrayOutputStream");
+        importMapping.put("DataChunk", "io.helidon.common.http.DataChunk");
+        importMapping.put("UncheckedIOException", "java.io.UncheckedIOException");
+        importMapping.put("IOException", "java.io.IOException");
+        importMapping.put("ByteArrayInputStream", "java.io.ByteArrayInputStream");
+//        importMapping.put("Optional", "java.util.Optional");
 
 //        if (additionalProperties.containsKey(PERFORM_BEANVALIDATION)) {
 //            this.setPerformBeanValidation(convertPropertyToBoolean(PERFORM_BEANVALIDATION));
@@ -289,6 +244,15 @@ public class JavaHelidonSeServerCodegen extends AbstractJavaCodegen
                         operation.returnContainer = "Set";
                     }
                 }
+                if (operation.formParams.size() > 0) {
+                    objs.put("isFormParamsFunctions", true);
+//                    for (CodegenParameter parameter : operation.formParams) {
+//                        if (parameter.isFile) {
+//                            objs.put("isByteCollector", true);
+//                            break;
+//                        }
+//                    }
+                }
             }
         }
         return objs;
@@ -299,13 +263,26 @@ public class JavaHelidonSeServerCodegen extends AbstractJavaCodegen
         super.postProcessModelProperty(model, property);
 
         //Add imports for Jackson
-        if (!BooleanUtils.toBoolean(model.isEnum)) {
-            model.imports.add("JsonProperty");
+//        if (!BooleanUtils.toBoolean(model.isEnum)) {
+//            model.imports.add("JsonProperty");
+//
+//            if (BooleanUtils.toBoolean(model.hasEnums)) {
+//                model.imports.add("JsonValue");
+//            }
+//        }
+    }
 
-            if (BooleanUtils.toBoolean(model.hasEnums)) {
-                model.imports.add("JsonValue");
-            }
-        }
+    @Override
+    public CodegenModel fromModel(String name, Schema model) {
+        CodegenModel codegenModel = super.fromModel(name, model);
+//        if (getAnnotationLibrary() != AnnotationLibrary.SWAGGER1) {
+            // remove swagger imports
+            codegenModel.imports.remove("ApiModelProperty");
+            codegenModel.imports.remove("ApiModel");
+//        codegenModel.imports.remove("LocalDate");
+//        codegenModel.imports.remove("LocalDateTime");
+//        }
+        return codegenModel;
     }
 
     @Override
@@ -313,17 +290,17 @@ public class JavaHelidonSeServerCodegen extends AbstractJavaCodegen
         objs = super.postProcessModelsEnum(objs);
 
         //Add imports for Jackson
-        List<Map<String, String>> imports = objs.getImports();
-        for (ModelMap mo : objs.getModels()) {
-            CodegenModel cm = mo.getModel();
-            // for enum model
-            if (Boolean.TRUE.equals(cm.isEnum) && cm.allowableValues != null) {
-                cm.imports.add(importMapping.get("JsonValue"));
-                Map<String, String> item = new HashMap<>();
-                item.put("import", importMapping.get("JsonValue"));
-                imports.add(item);
-            }
-        }
+//        List<Map<String, String>> imports = objs.getImports();
+//        for (ModelMap mo : objs.getModels()) {
+//            CodegenModel cm = mo.getModel();
+//            // for enum model
+//            if (Boolean.TRUE.equals(cm.isEnum) && cm.allowableValues != null) {
+//                cm.imports.add(importMapping.get("JsonValue"));
+//                Map<String, String> item = new HashMap<>();
+//                item.put("import", importMapping.get("JsonValue"));
+//                imports.add(item);
+//            }
+//        }
 
         return objs;
     }
@@ -380,6 +357,18 @@ public class JavaHelidonSeServerCodegen extends AbstractJavaCodegen
         }
         if (codegenOperation.queryParams.size() > 0) {
             codegenOperation.imports.add("List");
+        }
+        if (codegenOperation.formParams.size() > 0) {
+            codegenOperation.imports.add("Map");
+            codegenOperation.imports.add("HashMap");
+            codegenOperation.imports.add("InputStream");
+            codegenOperation.imports.add("ReadableBodyPart");
+            codegenOperation.imports.add("ArrayList");
+            codegenOperation.imports.add("DataChunk");
+            codegenOperation.imports.add("ByteArrayOutputStream");
+            codegenOperation.imports.add("IOException");
+            codegenOperation.imports.add("UncheckedIOException");
+            codegenOperation.imports.add("ByteArrayInputStream");
         }
         return codegenOperation;
     }

@@ -231,6 +231,37 @@ paths:
           required: false
           schema:
             type: string
+        - name: headerLong
+          in: header
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: cookieString
+          in: cookie
+          schema:
+            type: string
+          required: true
+        - name: cookieInt
+          in: cookie
+          schema:
+            type: integer
+            format: int32
+          required: false
+        - name: cookieIntArray
+          in: cookie
+          schema:
+            type: array
+            items:
+              type: integer
+          required: false
+        - name: cookieStringArray
+          in: cookie
+          schema:
+            type: array
+            items:
+              type: string
+          required: false
         - name: petId
           in: path
           description: Pet id to delete
@@ -256,6 +287,15 @@ paths:
         - name: petId
           in: path
           description: ID of pet to update
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+            maximum: 5
+        - name: petDate
+          in: path
+          description: Date for test
           required: true
           schema:
             type: integer
@@ -451,6 +491,30 @@ paths:
           required: true
           schema:
             type: string
+        - name: sizeString
+          in: query
+          description: String param to test Size constraint
+          required: true
+          schema:
+            type: string
+            minLength: 5
+            maxLength: 10
+        - name: minLong
+          in: query
+          description: Min Long param for test
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 10
+        - name: minDecimal
+          in: query
+          description: Min Decimal param for test
+          required: true
+          schema:
+            type: number
+            minimum: 0
+            exclusiveMinimum: true
       responses:
         '200':
           description: successful operation

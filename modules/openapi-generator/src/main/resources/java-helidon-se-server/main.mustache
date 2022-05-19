@@ -1,10 +1,3 @@
-{{#models}}{{#model}}{{classname}},
-{{/model}}{{/models}}
-
-{{#apiInfo}}{{#apis}}{{#operations}}
-    {{classname}}
-{{/operations}}{{/apis}}{{/apiInfo}}
-
 package {{basePackage}};
 
 import io.helidon.common.LogConfig;
@@ -61,7 +54,7 @@ public final class Main {
         // Try to start the server. If successful, print some info and arrange to
         // print a message at shutdown. If unsuccessful, print the exception.
         webserver.thenAccept(ws -> {
-                     System.out.println("WEB server is up! Host: " + ws.host() + "; port: " + ws.port());
+                     System.out.println("WEB server is up! {{{basePath}}}");
                      ws.whenShutdown().thenRun(() -> System.out.println("WEB server is DOWN. Good bye!"));
                  })
                  .exceptionallyAccept(t -> {
@@ -89,9 +82,6 @@ public final class Main {
                       .register(OpenAPISupport.create(config.get(OpenAPISupport.Builder.CONFIG_KEY)))
                       .register(health)                   // Health at "/health"
                       .register(metrics)                  // Metrics at "/metrics"
-{{#apiInfo}}{{#apis}}{{#operations}}{{!
-}}                      .register("/", new {{classname}}(config))
-{{/operations}}{{/apis}}{{/apiInfo}}
                       .build();
     }
 }

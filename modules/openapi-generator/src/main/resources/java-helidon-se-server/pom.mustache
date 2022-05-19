@@ -16,9 +16,15 @@
 
     <properties>
         <mainClass>{{{basePackage}}}.Main</mainClass>
+        <version.validation.api>2.0.1.Final</version.validation.api>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+            <version>${version.validation.api}</version>
+        </dependency>
         <dependency>
             <groupId>io.helidon.webserver</groupId>
             <artifactId>helidon-webserver</artifactId>
@@ -30,6 +36,10 @@
         <dependency>
             <groupId>io.helidon.media</groupId>
             <artifactId>helidon-media-jsonb</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.helidon.media</groupId>
+            <artifactId>helidon-media-multipart</artifactId>
         </dependency>
         <dependency>
             <groupId>io.helidon.config</groupId>

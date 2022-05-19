@@ -1,2 +1,12 @@
 //TODO REMOVE {{{dataType}}}
-{{#isPrimitiveType}}{{{dataType}}}{{/isPrimitiveType}}{{^isPrimitiveType}}{{#isArray}}List<String>{{/isArray}}{{^isArray}}String{{/isArray}}{{/isPrimitiveType}}
+                {{#isPrimitiveType}}{{^isFile}}{{{dataType}}}{{/isFile}}{{#isFile}}InputStream{{/isFile}}{{/isPrimitiveType}}{{!
+}}{{^isPrimitiveType}}{{!
+    }}{{#isArray}}{{!
+        }}{{#isBodyParam}}{{{dataType}}}{{/isBodyParam}}{{!
+        }}{{^isBodyParam}}{{!
+            }}List<{{#isFormParam}}{{#isFile}}InputStream{{/isFile}}{{^isFile}}String{{/isFile}}{{/isFormParam}}{{!
+            }}{{^isFormParam}}{{#isModel}}{{{dataType}}}{{/isModel}}{{^isModel}}String{{/isModel}}{{/isFormParam}}>{{!
+        }}{{/isBodyParam}}{{!
+    }}{{/isArray}}{{!
+    }}{{^isArray}}{{^isModel}}String{{/isModel}}{{#isModel}}{{{dataType}}}{{/isModel}}{{/isArray}}{{!
+}}{{/isPrimitiveType}}
