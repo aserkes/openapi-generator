@@ -47,12 +47,12 @@ public abstract class {{classname}} implements Service {
     * @param response the server response{{#allParams}}{{#isBodyParam}}{{#isModel}}
     * @param {{paramName}} {{{description}}}{{^description}}{{paramName}}{{/description}} {{/isModel}}{{/isBodyParam}}{{/allParams}}
     */
-    public void {{{operationId}}}(ServerRequest request, ServerResponse response{{#allParams}}{{#isBodyParam}}{{#isModel}}, {{{dataType}}} {{paramName}}{{/isModel}}{{/isBodyParam}}{{/allParams}}) {
-        {{>formParamsInitial}}
+    public void {{{operationId}}}(ServerRequest request, ServerResponse response{{#allParams}}{{#isBodyParam}}{{#isModel}}, {{{dataType}}} {{paramName}}{{/isModel}}{{/isBodyParam}}{{/allParams}}) { {{#formParams}}{{#-first}}
+        {{>formParamsInitial}}{{/-first}}{{/formParams}}
         Single.create({{^hasParams}}Single.empty(){{/hasParams}}{{#hasParams}}{{^bodyParam}}{{#formParams}}{{#-first}}formSingle{{/-first}}{{/formParams}}{{^formParams}}Single.empty(){{/formParams}}{{/bodyParam}}{{#bodyParam}}{{^isModel}}request.content().as(new GenericType<{{{dataType}}}>() { }){{/isModel}}{{#isModel}}Single.empty(){{/isModel}}{{/bodyParam}}{{/hasParams}})
             .thenAccept({{#bodyParam}}{{^isModel}}{{paramName}}{{/isModel}}{{#isModel}}val{{/isModel}}{{/bodyParam}}{{^bodyParam}}val{{/bodyParam}} -> {
-                {{#allParams}}{{> queryParams }}{{> pathParams }}{{>headerParams}}{{>bodyParams}}{{>formParams}}{{>cookieParams}}{{/allParams}}
-                handle{{#lambda.titlecase}}{{{operationId}}}{{/lambda.titlecase}}(request, response{{#allParams}}, {{paramName}}{{/allParams}});
+                {{#allParams}}{{> queryParams }}{{> pathParams }}{{>headerParams}}{{>bodyParams}}{{>formParams}}{{>cookieParams}}
+                {{/allParams}}handle{{#lambda.titlecase}}{{{operationId}}}{{/lambda.titlecase}}(request, response{{#allParams}}, {{paramName}}{{/allParams}});
             })
             .exceptionally(throwable -> handleError(request, response, throwable));
     }

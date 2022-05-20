@@ -1,4 +1,4 @@
-{{#formParams}}{{#-first}}Map<String, List<String>> nonFileFormContent = new HashMap<>();
+Map<String, List<String>> nonFileFormContent = new HashMap<>();
         Map<String, List<InputStream>> fileFormContent = new HashMap<>();
         Single<Void> formSingle = request.content().asStream(ReadableBodyPart.class)
                                          .forEach(part -> {
@@ -6,6 +6,6 @@
                                             if ("{{baseName}}".equals(name)) {
                                                 {{^isFile}}processNonFileFormField(name, nonFileFormContent, part);{{/isFile}}{{!
                                                 }}{{#isFile}}processFileFormField(name, fileFormContent, part);{{/isFile}}
-                                            }
-                                            {{/formParams}}part.drain();
-                                         });{{/-first}}{{/formParams}}
+                                            }{{/formParams}}
+                                            part.drain();
+                                         });

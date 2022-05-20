@@ -1,4 +1,1 @@
-{{#isCookieParam}}{{!
-    }} // TODO REMOVE  @CookieValue(name="{{baseName}}"{{#defaultValue}}, defaultValue = "{{{.}}}"{{/defaultValue}})
-                {{>dateTimeParam}} {{>dataType}} {{paramName}} = {{>paramValue}}
-                {{#useBeanValidation}}{{>beanValidationQueryParams}}{{/useBeanValidation}}{{/isCookieParam}}
+{{#isCookieParam}}{{>dataType}} {{paramName}} = {{>paramValue}}{{#useBeanValidation}}{{>beanValidationQueryParams}}{{/useBeanValidation}}{{/isCookieParam}}

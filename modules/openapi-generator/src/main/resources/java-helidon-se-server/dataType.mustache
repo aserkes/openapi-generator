@@ -1,5 +1,4 @@
-//TODO REMOVE {{{dataType}}}
-                {{#isPrimitiveType}}{{^isFile}}{{{dataType}}}{{/isFile}}{{#isFile}}InputStream{{/isFile}}{{/isPrimitiveType}}{{!
+{{#isPrimitiveType}}{{^isFile}}{{{dataType}}}{{/isFile}}{{#isFile}}InputStream{{/isFile}}{{/isPrimitiveType}}{{!
 }}{{^isPrimitiveType}}{{!
     }}{{#isArray}}{{!
         }}{{#isBodyParam}}{{{dataType}}}{{/isBodyParam}}{{!

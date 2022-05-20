@@ -1,10 +1,1 @@
-{{#isFormParam}}{{^isFile}}
-        //TODO REMOVE         {{#useBeanValidation}} @Valid{{/useBeanValidation}} @RequestParam(value = "{{baseName}}"{{#required}}, required = true{{/required}}{{^required}}, required = false{{/required}})
-        //TODO REMOVE
-                {{>dateTimeParam}} {{>dataType}} {{paramName}} = {{>paramValue}}
-    {{/isFile}}{{#isFile}}
-        //TODO REMOVE @RequestPart(value = "{{baseName}}"{{#required}}, required = true{{/required}}{{^required}}, required = false{{/required}})
-        //TODO REMOVE {{#isArray}}List<{{/isArray}}{{#reactive}}Flux<Part>{{/reactive}}{{^reactive}}MultipartFile{{/reactive}}{{#isArray}}>{{/isArray}} {{paramName}}
-                {{#isArray}}List<{{/isArray}}InputStream{{#isArray}}>{{/isArray}} {{paramName}} = {{>paramValue}}
-    {{/isFile}}{{#useBeanValidation}}
-                {{>beanValidationQueryParams}}{{/useBeanValidation}}{{/isFormParam}}
+{{#isFormParam}}{{^isFile}}{{>dataType}} {{paramName}} = {{>paramValue}}{{/isFile}}{{#isFile}}{{#isArray}}List<{{/isArray}}InputStream{{#isArray}}>{{/isArray}} {{paramName}} = {{>paramValue}}{{/isFile}}{{#useBeanValidation}}{{>beanValidationQueryParams}}{{/useBeanValidation}}{{/isFormParam}}

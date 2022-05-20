@@ -1,5 +1,1 @@
-{{#isHeaderParam}}
-//TODO REMOVE    @RequestHeader(value = "{{baseName}}", required = {{#required}}true{{/required}}{{^required}}false{{/required}}{{#defaultValue}}, defaultValue = "{{{.}}}"{{/defaultValue}})
-{{>dateTimeParam}} {{>dataType}} {{paramName}} = {{>paramValue}}
-                {{#useBeanValidation}}{{>beanValidationHeaderParams}}{{/useBeanValidation}}
-{{/isHeaderParam}}
+{{#isHeaderParam}}{{>dataType}} {{paramName}} = {{>paramValue}}{{#useBeanValidation}}{{>beanValidationHeaderParams}}{{/useBeanValidation}}{{/isHeaderParam}}
