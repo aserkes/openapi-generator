@@ -32,14 +32,16 @@ public class JavaHelidonSeServerCodegenTest {
                       .fileContains("import java.util.Objects;")
                       .assertMethod("deletePet", "ServerRequest", "ServerResponse")
                       .bodyContainsLines(
-                              "Double petId = Double.valueOf(request.path().param(\"petId\"));",
-                              "Objects.requireNonNull(petId);"
+                              "Long petId = Optional.ofNullable(request.path().param(\"petId\")).map(Long::valueOf).orElse" +
+                                      "(null);",
+                              "ValidatorUtils.checkNonNull(petId);"
                       )
                       .toFileAssert()
                       .assertMethod("getPetById")
                       .bodyContainsLines(
-                              "Integer petId = Integer.valueOf(request.path().param(\"petId\"));",
-                              "Objects.requireNonNull(petId);"
+                              "Long petId = Optional.ofNullable(request.path().param(\"petId\")).map(Long::valueOf).orElse" +
+                                      "(null);",
+                              "ValidatorUtils.checkNonNull(petId);"
                       );
     }
 
@@ -61,10 +63,18 @@ public class JavaHelidonSeServerCodegenTest {
         JavaFileAssert.assertThat(Paths.get(outputPath + "/src/main/java/org/openapitools/api/PetService.java"))
                       .fileContains("import java.util.List;")
                       .assertMethod("findPetsByTags")
-                      .bodyContainsLines("List<String> tags = request.queryParams().toMap().get(\"tags\");")
+                      .bodyContainsLines(
+                              "List<String> tags = Optional.ofNullable(request.queryParams().toMap().get(\"tags\"))" +
+                              ".orElse(null);",
+                              "ValidatorUtils.checkNonNull(tags);"
+                              )
                       .toFileAssert()
                       .assertMethod("findPetsByStatus")
-                      .bodyContainsLines("List<String> status = request.queryParams().toMap().get(\"status\");");
+                      .bodyContainsLines(
+                              "List<String> status = Optional.ofNullable(request.queryParams().toMap().get(\"status\")).orElse" +
+                                      "(null);",
+                              "ValidatorUtils.checkNonNull(status);"
+                      );
     }
 
     @Test
@@ -90,10 +100,16 @@ public class JavaHelidonSeServerCodegenTest {
                       )
                       .toFileAssert()
                       .assertMethod("addPet", "ServerRequest", "ServerResponse", "Pet")
-                      .bodyContainsLines("Objects.requireNonNull(pet);")
+                      .bodyContainsLines(
+                              "ValidatorUtils.checkNonNull(pet);",
+                              "handleAddPet(request, response, pet);"
+                      )
                       .toFileAssert()
                       .assertMethod("updatePet", "ServerRequest", "ServerResponse", "Pet")
-                      .bodyContainsLines("Objects.requireNonNull(pet);");
+                      .bodyContainsLines(
+                              "ValidatorUtils.checkNonNull(pet);",
+                              "handleUpdatePet(request, response, pet);"
+                      );
 
         JavaFileAssert.assertThat(Paths.get(outputPath + "/src/main/java/org/openapitools/api/UserService.java"))
                       .assertMethod("update")
@@ -105,13 +121,16 @@ public class JavaHelidonSeServerCodegenTest {
                       )
                       .toFileAssert()
                       .assertMethod("createUser", "ServerRequest", "ServerResponse", "User")
-                      .bodyContainsLines("Objects.requireNonNull(user);")
+                      .bodyContainsLines(
+                              "ValidatorUtils.checkNonNull(user);",
+                              "handleCreateUser(request, response, user);"
+                      )
                       .toFileAssert()
                       .assertMethod("createUsersWithArrayInput", "ServerRequest", "ServerResponse")
                       .bodyContainsLines(
+                              "Single.create(request.content().as(new GenericType<List<User>>() { }))",
                               ".thenAccept(user -> {",
-                              "request.content().as(new GenericType<List<User>>() { })",
-                              "Objects.requireNonNull(user);",
+                              "ValidatorUtils.checkNonNull(user);",
                               "handleCreateUsersWithArrayInput(request, response, user);",
                               ".exceptionally(throwable -> handleError(request, response, throwable));"
                       );
@@ -227,16 +246,24 @@ public class JavaHelidonSeServerCodegenTest {
 
         JavaFileAssert.assertThat(Paths.get(outputPath + "/src/main/java/org/openapitools/api/PetService.java"))
                       .assertMethod("findPetsByStatus")
-                      .bodyContainsLines("Objects.requireNonNull(status);")
+                      .bodyContainsLines(
+                              "ValidatorUtils.checkNonNull(status);",
+                              "List<String> status = Optional.ofNullable(request.queryParams().toMap().get(\"status\")).orElse" +
+                                      "(null);"
+                      )
                       .toFileAssert()
                       .assertMethod("findPetsByTags")
-                      .bodyContainsLines("Objects.requireNonNull(tags);");
+                      .bodyContainsLines(
+                              "List<String> tags = Optional.ofNullable(request.queryParams().toMap().get(\"tags\")).orElse" +
+                                      "(null);",
+                              "ValidatorUtils.checkNonNull(tags);"
+                      );
 
         JavaFileAssert.assertThat(Paths.get(outputPath + "/src/main/java/org/openapitools/api/UserService.java"))
                       .assertMethod("loginUser")
                       .bodyContainsLines(
                               "ValidatorUtils.validatePattern(username, \"^[a-zA-Z0-9]+[a-zA-Z0-9\\\\" +
-                              ".\\\\-_]*[a-zA-Z0-9]+$\");",
+                                      ".\\\\-_]*[a-zA-Z0-9]+$\");",
                               ""
                       );
     }

@@ -169,7 +169,7 @@ paths:
           required: true
           schema:
             type: integer
-            format: int32
+            format: int64
       responses:
         '200':
           description: successful operation
@@ -267,8 +267,8 @@ paths:
           description: Pet id to delete
           required: true
           schema:
-            type: number
-            format: double
+            type: integer
+            format: int64
       responses:
         '400':
           description: Invalid pet value
@@ -326,6 +326,27 @@ paths:
                   description: file to upload
                   type: string
                   format: binary
+  /pet/upload:
+    post:
+      tags:
+        - pet
+      summary: Add a few pets using form
+      description: ''
+      operationId: addPets
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PetsForm'
+        description: Object that that contains info about pets
+        required: true
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
   /store/inventory:
     get:
       tags:
@@ -810,3 +831,30 @@ components:
           type: string
         message:
           type: string
+    PetsForm:
+      type: object
+      properties:
+        images[]:
+          type: array
+          items:
+            type: string
+            format: binary
+        image:
+          type: string
+          format: binary
+        titles[]:
+          type: array
+          items:
+            type: string
+        longArray:
+          type: array
+          items:
+            type: integer
+            format: int64
+        stringParam:
+          type: string
+        intParam:
+          type: integer
+          format: int32
+      required:
+        - stringParam
