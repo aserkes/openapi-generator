@@ -26,9 +26,9 @@ public abstract class {{classname}} implements Service {
     }
 
     /**
-    * A service registers itself by updating the routing rules.
-    * @param rules the routing rules.
-    */
+     * A service registers itself by updating the routing rules.
+     * @param rules the routing rules.
+     */
     @Override
     public void update(Routing.Rules rules) {
 {{#operation}}
@@ -37,17 +37,19 @@ public abstract class {{classname}} implements Service {
         }}{{^bodyParam}}this::{{{operationId}}}){{/bodyParam}};
 {{/operation}}
     }
-{{!
-}}  {{#isFormParamsFunctions}}{{>formParamsFunctions}}{{/isFormParamsFunctions}}
+{{#isFormParamsFunctions}}
+
+    {{!}}{{>formParamsFunctions}}
+{{/isFormParamsFunctions}}
 
 {{#operation}}
     /**
-    * {{httpMethod}} {{{path}}}{{#summary}} : {{.}}{{/summary}}.
-    * @param request the server request
-    * @param response the server response{{#allParams}}{{#isBodyParam}}{{#isModel}}
-    * @param {{paramName}} {{{description}}}{{^description}}{{paramName}}{{/description}} {{/isModel}}{{/isBodyParam}}{{/allParams}}
-    */
-    public void {{{operationId}}}(ServerRequest request, ServerResponse response{{#allParams}}{{#isBodyParam}}{{#isModel}}, {{{dataType}}} {{paramName}}{{/isModel}}{{/isBodyParam}}{{/allParams}}) { {{#formParams}}{{#-first}}
+     * {{httpMethod}} {{{path}}}{{#summary}} : {{.}}{{/summary}}.
+     * @param request the server request
+     * @param response the server response{{#allParams}}{{#isBodyParam}}{{#isModel}}
+     * @param {{paramName}} {{{description}}}{{^description}}{{paramName}}{{/description}} {{/isModel}}{{/isBodyParam}}{{/allParams}}
+     */
+    void {{{operationId}}}(ServerRequest request, ServerResponse response{{#allParams}}{{#isBodyParam}}{{#isModel}}, {{{dataType}}} {{paramName}}{{/isModel}}{{/isBodyParam}}{{/allParams}}) { {{#formParams}}{{#-first}}
         {{>formParamsInitial}}{{/-first}}{{/formParams}}
         Single.create({{^hasParams}}Single.empty(){{/hasParams}}{{#hasParams}}{{^bodyParam}}{{#formParams}}{{#-first}}formSingle{{/-first}}{{/formParams}}{{^formParams}}Single.empty(){{/formParams}}{{/bodyParam}}{{#bodyParam}}{{^isModel}}request.content().as(new GenericType<{{{dataType}}}>() { }){{/isModel}}{{#isModel}}Single.empty(){{/isModel}}{{/bodyParam}}{{/hasParams}})
             .thenAccept({{#bodyParam}}{{^isModel}}{{paramName}}{{/isModel}}{{#isModel}}val{{/isModel}}{{/bodyParam}}{{^bodyParam}}val{{/bodyParam}} -> {
@@ -57,13 +59,16 @@ public abstract class {{classname}} implements Service {
             .exceptionally(throwable -> handleError(request, response, throwable));
     }
 
+    /**
+     * Handle {{httpMethod}} {{{path}}}{{#summary}} : {{.}}{{/summary}}.
+     * @param request the server request
+     * @param response the server response{{#allParams}}
+     * @param {{paramName}} {{{description}}}{{^description}}{{paramName}}{{/description}} {{/allParams}}
+     */
     abstract void handle{{#lambda.titlecase}}{{{operationId}}}{{/lambda.titlecase}}(ServerRequest request, ServerResponse response{{#allParams}}, {{>dataType}} {{paramName}}{{/allParams}});
 
 {{/operation}}
     abstract Void handleError(ServerRequest request, ServerResponse response, Throwable throwable);{{!
-}}{{#isFormCollector}}
-//+++++++++++++isFormCollector++++++++++++{{/isFormCollector}}{{!
-}}{{#isByteCollector}}
-//+++++++++++++isByteCollector++++++++++++{{/isByteCollector}}
+}}
 }
 {{/operations}}

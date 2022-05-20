@@ -15,19 +15,19 @@ public class {{classname}} {{#parent}}extends {{{.}}}{{/parent}} {{#vendorExtens
 {{/vars}}
 
     /**
-    * Default constructor.
-    */
+     * Default constructor.
+     */
     public {{classname}}() {
     // JSON-B
     }
 
     /**
-    * Create {{classname}}.
-    *
+     * Create {{classname}}.
+     *
 {{#vars}}
-    * @param {{name}} {{description}}{{^description}}{{name}}{{/description}}
+     * @param {{name}} {{description}}{{^description}}{{name}}{{/description}}
 {{/vars}}
-    */
+     */
     public {{classname}}(
 {{#vars}}
         {{{datatypeWithEnum}}} {{name}}{{^-last}}, {{/-last}}
@@ -38,13 +38,27 @@ public class {{classname}} {{#parent}}extends {{{.}}}{{/parent}} {{#vendorExtens
 {{/vars}}
     }
 {{#vars}}
-    {{#vendorExtensions.x-extra-annotation}}{{{vendorExtensions.x-extra-annotation}}}{{/vendorExtensions.x-extra-annotation}}
+
+    /**
+    {{#description}}
+     * {{{.}}}
+    {{/description}}
+    {{^description}}
+     * Get {{name}}
+    {{/description}}
+    {{#minimum}}
+     * minimum: {{.}}
+    {{/minimum}}
+    {{#maximum}}
+     * maximum: {{.}}
+    {{/maximum}}
+     * @return {{name}}
+     */
     public {{{datatypeWithEnum}}} {{getter}}() {
         return {{name}};
     }
 
-    {{#vendorExtensions.x-setter-extra-annotation}}{{{vendorExtensions.x-setter-extra-annotation}}}
-    {{/vendorExtensions.x-setter-extra-annotation}}public void {{setter}}({{{datatypeWithEnum}}} {{name}}) {
+    public void {{setter}}({{{datatypeWithEnum}}} {{name}}) {
         this.{{name}} = {{name}};
     }
 {{/vars}}

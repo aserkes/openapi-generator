@@ -6,8 +6,8 @@ package {{package}};
 {{#model}}{{#description}}
 /**
  * {{{.}}}
- */{{/description}}
-{{#isEnum}}{{>enumOuterClass}}{{/isEnum}}
-{{^isEnum}}{{>pojo}}{{/isEnum}}
+ */{{/description}}{{#isEnum}}
+{{>enumOuterClass}}{{/isEnum}}{{^isEnum}}
+{{>pojo}}{{/isEnum}}
 {{/model}}
 {{/models}}
