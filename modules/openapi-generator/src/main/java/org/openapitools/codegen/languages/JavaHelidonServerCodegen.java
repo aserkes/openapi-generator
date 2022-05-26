@@ -36,29 +36,53 @@ import org.openapitools.codegen.model.OperationsMap;
 
 import static org.openapitools.codegen.utils.StringUtils.camelize;
 
+import io.swagger.v3.oas.models.media.Schema;
+import org.openapitools.codegen.CliOption;
+import org.openapitools.codegen.CodegenConstants;
+import org.openapitools.codegen.CodegenModel;
+import org.openapitools.codegen.CodegenType;
+import org.openapitools.codegen.SupportingFile;
+import org.openapitools.codegen.meta.features.DocumentationFeature;
+import org.openapitools.codegen.model.ModelMap;
+import org.openapitools.codegen.model.OperationsMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class JavaHelidonServerCodegen extends JavaHelidonCommonCodegen {
+
+    private final Logger LOGGER = LoggerFactory.getLogger(JavaHelidonServerCodegen.class);
 
     protected boolean useBeanValidation = true;
     protected String implFolder = "src/main/java";
-    protected String basePackage = "org.openapitools";
-
-    public static final String BASE_PACKAGE = "basePackage";
+    protected String serializationLibrary = null;
 
     public JavaHelidonServerCodegen() {
         super();
 
         modifyFeatureSet(features -> features.includeDocumentationFeatures(DocumentationFeature.Readme));
 
-        embeddedTemplateDir = templateDir = "java-helidon/server";
-        invokerPackage = "org.openapitools.api";
-        apiPackage = "org.openapitools.api";
-        modelPackage = "org.openapitools.model";
+        outputFolder = "generated-code" + File.separator + "java";
+        embeddedTemplateDir = templateDir = "java-helidon" + File.separator + "server";
+        invokerPackage = "org.openapitools.server";
+        artifactId = "openapi-java-server";
+        apiPackage = invokerPackage + ".api";
+        modelPackage = invokerPackage + ".model";
 
         // clioOptions default redefinition need to be updated
         updateOption(CodegenConstants.INVOKER_PACKAGE, this.getInvokerPackage());
         updateOption(CodegenConstants.ARTIFACT_ID, this.getArtifactId());
         updateOption(CodegenConstants.API_PACKAGE, apiPackage);
         updateOption(CodegenConstants.MODEL_PACKAGE, modelPackage);
+
+        modelTestTemplateFiles.put("model_test.mustache", ".java");
+
+        cliOptions.add(CliOption.newBoolean(USE_BEANVALIDATION, "Use Bean Validation"));
+        cliOptions.add(CliOption.newBoolean(PERFORM_BEANVALIDATION, "Perform BeanValidation"));
 
         // clear model and api doc template as this codegen
         // does not support auto-generated markdown doc at the moment
@@ -69,7 +93,10 @@ public class JavaHelidonServerCodegen extends JavaHelidonCommonCodegen {
         // as this codegen does not support api tests at the moment
         apiTestTemplateFiles.clear();
 
-        supportedLibraries.put(HELIDON_SE, "Helidon SE server");
+        supportedLibraries.put(HELIDON_MP, "Helidon MP Server");
+        supportedLibraries.put(HELIDON_SE, "Helidon SE Server");
+        supportedLibraries.put(HELIDON_NIMA, "Helidon NIMA Server");
+        supportedLibraries.put(HELIDON_NIMA_ANNOTATIONS, "Helidon NIMA Annotations Server");
 
         CliOption libraryOption = new CliOption(CodegenConstants.LIBRARY, "library template (sub-template) to use");
         libraryOption.setEnum(supportedLibraries);
@@ -77,19 +104,23 @@ public class JavaHelidonServerCodegen extends JavaHelidonCommonCodegen {
         cliOptions.add(libraryOption);
         setLibrary(HELIDON_SE);
 
-        cliOptions.add(new CliOption(BASE_PACKAGE, "base package (invokerPackage) for generated code")
-                .defaultValue(this.getBasePackage()));
+        CliOption serializationLibrary = new CliOption(CodegenConstants.SERIALIZATION_LIBRARY,
+                "Serialization library, defaults to Jackson");
+        Map<String, String> serializationOptions = new HashMap<>();
+        serializationOptions.put(SERIALIZATION_LIBRARY_JACKSON, "Use Jackson as serialization library");
+        serializationOptions.put(SERIALIZATION_LIBRARY_JSONB, "Use JSON-B as serialization library");
+        serializationLibrary.setEnum(serializationOptions);
+        cliOptions.add(serializationLibrary);
+        setSerializationLibrary(SERIALIZATION_LIBRARY_JACKSON);
+
+        this.setLegacyDiscriminatorBehavior(false);
     }
 
     @Override
     public void processOpts() {
         super.processOpts();
+        supportingFiles.clear();
 
-        if (additionalProperties.containsKey(BASE_PACKAGE)) {
-            this.setBasePackage((String) additionalProperties.get(BASE_PACKAGE));
-        } else {
-            additionalProperties.put(BASE_PACKAGE, basePackage);
-        }
 
         supportingFiles.add(new SupportingFile("pom.mustache", "", "pom.xml"));
         supportingFiles.add(new SupportingFile("README.mustache", "", "README.md"));
@@ -137,6 +168,57 @@ public class JavaHelidonServerCodegen extends JavaHelidonCommonCodegen {
             supportingFiles.add(new SupportingFile("validatorUtils.mustache",
                     (sourceFolder + File.separator + apiPackage).replace(".", java.io.File.separator),
                     "ValidatorUtils.java"));
+        }
+
+        if (!additionalProperties.containsKey(MICROPROFILE_ROOT_PACKAGE_PROPERTY)) {
+            additionalProperties.put(MICROPROFILE_ROOT_PACKAGE_PROPERTY, MICROPROFILE_REST_CLIENT_DEFAULT_ROOT_PACKAGE);
+        }
+
+        if (additionalProperties.containsKey(CodegenConstants.SERIALIZATION_LIBRARY)) {
+            setSerializationLibrary(additionalProperties.get(CodegenConstants.SERIALIZATION_LIBRARY).toString());
+        }
+
+        String invokerFolder = (sourceFolder + '/' + invokerPackage).replace(".", "/");
+
+        if (additionalProperties.containsKey("jsr310") && isLibrary(HELIDON_MP)) {
+            supportingFiles.add(new SupportingFile("JavaTimeFormatter.mustache", invokerFolder, "JavaTimeFormatter.java"));
+        }
+
+        if (isLibrary(HELIDON_MP)) {
+            String apiExceptionFolder = (sourceFolder + File.separator
+                    + apiPackage().replace('.', File.separatorChar)).replace('/', File.separatorChar);
+            String resourceFolder = "src" + File.separator + "main" + File.separator + "resources";
+            String metaInfFolder = resourceFolder + File.separator + "META-INF";
+            supportingFiles.add(new SupportingFile("RestApplication.mustache", invokerFolder, "RestApplication.java"));
+            supportingFiles.add(new SupportingFile("microprofile-config.properties.mustache", metaInfFolder, "microprofile-config.properties"));
+            supportingFiles.add(new SupportingFile("beans.xml.mustache", metaInfFolder, "beans.xml"));
+        } else if (isLibrary(HELIDON_NIMA)) {
+            throw new UnsupportedOperationException("Not implemented");
+        } else if (isLibrary(HELIDON_NIMA_ANNOTATIONS)) {
+            throw new UnsupportedOperationException("Not implemented");
+        } else {
+            LOGGER.error("Unknown library option (-l/--library): {}", getLibrary());
+        }
+
+        if (getSerializationLibrary() == null) {
+            LOGGER.info("No serializationLibrary configured, using '{}' as fallback", SERIALIZATION_LIBRARY_JACKSON);
+            setSerializationLibrary(SERIALIZATION_LIBRARY_JACKSON);
+        }
+        switch (getSerializationLibrary()) {
+            case SERIALIZATION_LIBRARY_JACKSON:
+                additionalProperties.put(SERIALIZATION_LIBRARY_JACKSON, "true");
+                additionalProperties.remove(SERIALIZATION_LIBRARY_JSONB);
+                supportingFiles.add(new SupportingFile("RFC3339DateFormat.mustache", invokerFolder, "RFC3339DateFormat.java"));
+                break;
+            case SERIALIZATION_LIBRARY_JSONB:
+                additionalProperties.put(SERIALIZATION_LIBRARY_JSONB, "true");
+                additionalProperties.remove(SERIALIZATION_LIBRARY_JACKSON);
+                break;
+            default:
+                additionalProperties.remove(SERIALIZATION_LIBRARY_JACKSON);
+                additionalProperties.remove(SERIALIZATION_LIBRARY_JSONB);
+                LOGGER.error("Unknown serialization library option");
+                break;
         }
     }
 
@@ -206,14 +288,10 @@ public class JavaHelidonServerCodegen extends JavaHelidonCommonCodegen {
             }
         }
         return objs;
-    }
 
-    public void setBasePackage(String basePackage) {
-        this.basePackage = basePackage;
-    }
-
-    public String getBasePackage() {
-        return basePackage;
+        if (HELIDON_MP.equals(getLibrary())) {
+            return AbstractJavaJAXRSServerCodegen.jaxrsPostProcessOperations(objs);
+        }
     }
 
     @Override
@@ -241,4 +319,19 @@ public class JavaHelidonServerCodegen extends JavaHelidonCommonCodegen {
     public void setPerformBeanValidation(boolean performBeanValidation) {
         throw new UnsupportedOperationException("Not implemented");
     }
+
+    public String getSerializationLibrary() {
+        return serializationLibrary;
+    }
+
+    public void setSerializationLibrary(String serializationLibrary) {
+        if (SERIALIZATION_LIBRARY_JACKSON.equalsIgnoreCase(serializationLibrary)) {
+            this.serializationLibrary = SERIALIZATION_LIBRARY_JACKSON;
+        } else if (SERIALIZATION_LIBRARY_JSONB.equalsIgnoreCase(serializationLibrary)) {
+            this.serializationLibrary = SERIALIZATION_LIBRARY_JSONB;
+        } else {
+            throw new IllegalArgumentException("Unexpected serializationLibrary value: " + serializationLibrary);
+        }
+    }
 }
+
