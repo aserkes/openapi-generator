@@ -17,13 +17,16 @@
 package org.openapitools.codegen.languages;
 
 import java.io.File;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.servers.Server;
 import org.openapitools.codegen.CliOption;
 import org.openapitools.codegen.CodegenConstants;
@@ -32,6 +35,7 @@ import org.openapitools.codegen.CodegenOperation;
 import org.openapitools.codegen.CodegenType;
 import org.openapitools.codegen.SupportingFile;
 import org.openapitools.codegen.meta.features.DocumentationFeature;
+import org.openapitools.codegen.meta.features.SecurityFeature;
 import org.openapitools.codegen.model.ModelMap;
 import org.openapitools.codegen.model.OperationMap;
 import org.openapitools.codegen.model.OperationsMap;
@@ -47,11 +51,17 @@ public class JavaHelidonServerCodegen extends JavaHelidonCommonCodegen {
     protected boolean useBeanValidation = true;
     protected String implFolder = "src/main/java";
     protected String serializationLibrary = null;
+    protected boolean authenticateDefaults = false;
 
     public JavaHelidonServerCodegen() {
         super();
 
-        modifyFeatureSet(features -> features.includeDocumentationFeatures(DocumentationFeature.Readme));
+        modifyFeatureSet(features ->
+                features.includeDocumentationFeatures(DocumentationFeature.Readme)
+                        .securityFeatures(EnumSet.of(
+                                SecurityFeature.BasicAuth
+                        ))
+        );
 
         outputFolder = "generated-code" + File.separator + "java";
         embeddedTemplateDir = templateDir = "java-helidon" + File.separator + "server";
@@ -60,7 +70,7 @@ public class JavaHelidonServerCodegen extends JavaHelidonCommonCodegen {
         apiPackage = invokerPackage + ".api";
         modelPackage = invokerPackage + ".model";
         parentVersion = "2.5.0";
-        sourceFolder = "src" + File.separator + "main"+ File.separator + "java";
+        sourceFolder = "src" + File.separator + "main" + File.separator + "java";
 
         // clioOptions default redefinition need to be updated
         updateOption(CodegenConstants.INVOKER_PACKAGE, this.getInvokerPackage());
@@ -162,7 +172,8 @@ public class JavaHelidonServerCodegen extends JavaHelidonCommonCodegen {
             String resourceFolder = "src" + File.separator + "main" + File.separator + "resources";
             String metaInfFolder = resourceFolder + File.separator + "META-INF";
             supportingFiles.add(new SupportingFile("RestApplication.mustache", invokerFolder, "RestApplication.java"));
-            supportingFiles.add(new SupportingFile("microprofile-config.properties.mustache", metaInfFolder, "microprofile-config.properties"));
+            supportingFiles.add(new SupportingFile("microprofile-config.properties.mustache", metaInfFolder, "microprofile" +
+                    "-config.properties"));
             supportingFiles.add(new SupportingFile("beans.xml.mustache", metaInfFolder, "beans.xml"));
         } else if (isLibrary(HELIDON_SE)) {
             dateLibrary = "legacy";
@@ -213,6 +224,14 @@ public class JavaHelidonServerCodegen extends JavaHelidonCommonCodegen {
                 LOGGER.error("Unknown serialization library option");
                 break;
         }
+    }
+
+    @Override
+    public void preprocessOpenAPI(OpenAPI openAPI) {
+        super.preprocessOpenAPI(openAPI);
+        List<SecurityRequirement> security = openAPI.getSecurity();
+        authenticateDefaults = security != null && security.size() > 0;
+        additionalProperties.put("authenticateDefaults", authenticateDefaults);
     }
 
     @Override

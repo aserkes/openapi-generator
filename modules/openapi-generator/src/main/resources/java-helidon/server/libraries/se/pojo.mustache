@@ -1,6 +1,7 @@
 public class {{classname}} {{#parent}}extends {{{.}}}{{/parent}} {{#vendorExtensions.x-implements}}{{#-first}}implements {{{.}}}{{/-first}}{{^-first}}, {{{.}}}{{/-first}}{{/vendorExtensions.x-implements}} {
 
 {{#vars}}
+    //{{{datetimeFormat}}}
     {{#isEnum}}
         {{^isContainer}}
             {{>enumClass}}

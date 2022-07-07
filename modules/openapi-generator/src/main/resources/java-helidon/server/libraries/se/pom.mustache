@@ -61,11 +61,29 @@
             <groupId>io.helidon.openapi</groupId>
             <artifactId>helidon-openapi</artifactId>
         </dependency>
+{{#authMethods}}
+    {{#-first}}
+        <dependency>
+            <groupId>io.helidon.security.integration</groupId>
+            <artifactId>helidon-security-integration-webserver</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.helidon.config</groupId>
+            <artifactId>helidon-config-encryption</artifactId>
+        </dependency>
+    {{/-first}}
+    {{#isBasic}}
+        <dependency>
+            <groupId>io.helidon.security.providers</groupId>
+            <artifactId>helidon-security-providers-http-auth</artifactId>
+        </dependency>
+    {{/isBasic}}
+{{/authMethods}}
 {{#jackson}}
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-json-jackson</artifactId>
-        </dependency>
+       </dependency>
 {{/jackson}}
 {{#jsonb}}
         <dependency>
@@ -87,6 +105,15 @@
             <artifactId>helidon-webclient</artifactId>
             <scope>test</scope>
         </dependency>
+{{#authMethods}}
+    {{#-first}}
+        <dependency>
+            <groupId>io.helidon.webclient</groupId>
+            <artifactId>helidon-webclient-security</artifactId>
+            <scope>test</scope>
+        </dependency>
+    {{/-first}}
+{{/authMethods}}
     </dependencies>
 
     <build>

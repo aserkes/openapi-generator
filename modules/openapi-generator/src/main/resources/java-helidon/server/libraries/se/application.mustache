@@ -1,3 +1,32 @@
 server:
   port: {{port}}{{^port}}8080{{/port}}
   host: {{host}}{{^host}}localhost{{/host}}
+{{#authMethods}}
+    {{#-first}}
+security:
+  config:
+    # Configuration of secured config (encryption of passwords in property files)
+    # Set to true for production - if set to true, clear text passwords will cause failure
+    require-encryption: false
+  providers:
+    {{/-first}}
+    {{#isBasic}}
+    - http-basic-auth:
+    # here some details about http-basic-auth have to be added
+    {{/isBasic}}
+{{/authMethods}}
+{{#authMethods}}
+  {{#-first}}
+  web-server:
+    # Configuration of integration with web server
+  {{#authenticateDefaults}}
+    defaults:
+      authenticate: true
+  {{/authenticateDefaults}}
+    paths:{{!
+  }}{{#apiInfo}}{{#apis}}{{#operations}}{{#operation}}
+        - path: "{{{path}}}"
+          methods: [ "{{#lambda.lowercase}}{{httpMethod}}{{/lambda.lowercase}}" ]
+          {{#authMethods}}# here some details about {{name}} have to be added for the above path and method(s){{/authMethods}}{{/operation}}{{/operations}}{{/apis}}{{/apiInfo}}
+  {{/-first}}
+{{/authMethods}}

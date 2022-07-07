@@ -9,6 +9,10 @@ import io.helidon.media.jsonb.JsonbSupport;
 import io.helidon.media.jsonp.JsonpSupport;
 import io.helidon.metrics.MetricsSupport;
 import io.helidon.openapi.OpenAPISupport;
+{{#authMethods}}{{#-first}}
+import io.helidon.security.SecurityContext;
+import io.helidon.security.integration.webserver.WebSecurity;
+{{/-first}}{{/authMethods}}
 import io.helidon.webserver.Routing;
 import io.helidon.webserver.WebServer;
 
@@ -82,6 +86,11 @@ public final class Main {
                       .register(OpenAPISupport.create(config.get(OpenAPISupport.Builder.CONFIG_KEY)))
                       .register(health)                   // Health at "/health"
                       .register(metrics)                  // Metrics at "/metrics"
+{{#authMethods}}
+    {{#-first}}
+                      .register(WebSecurity.create(config.get("security")))
+    {{/-first}}
+{{/authMethods}}
                       .build();
     }
 }
