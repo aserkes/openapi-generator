@@ -44,9 +44,13 @@ public class JavaHelidonServerCodegen extends JavaHelidonCommonCodegen {
 
     private final Logger LOGGER = LoggerFactory.getLogger(JavaHelidonServerCodegen.class);
 
+    public static final String INTERFACE_ONLY = "interfaceOnly";
+
     protected boolean useBeanValidation = true;
     protected String implFolder = "src/main/java";
     protected String serializationLibrary = null;
+
+    private boolean interfaceOnly = false;
 
     public JavaHelidonServerCodegen() {
         super();
@@ -71,6 +75,8 @@ public class JavaHelidonServerCodegen extends JavaHelidonCommonCodegen {
 
         cliOptions.add(CliOption.newBoolean(USE_BEANVALIDATION, "Use Bean Validation"));
         cliOptions.add(CliOption.newBoolean(PERFORM_BEANVALIDATION, "Perform BeanValidation"));
+        cliOptions.add(CliOption.newBoolean(INTERFACE_ONLY,
+                "Whether to generate only API interface stubs without the server files.", interfaceOnly));
 
         // clear model and api doc template as this codegen
         // does not support auto-generated markdown doc at the moment
@@ -111,8 +117,6 @@ public class JavaHelidonServerCodegen extends JavaHelidonCommonCodegen {
         dateLibrary = "java8";
 
         supportingFiles.add(new SupportingFile("pom.mustache", "", "pom.xml"));
-        supportingFiles.add(new SupportingFile("build.gradle.mustache", "", "build.gradle"));
-        supportingFiles.add(new SupportingFile("settings.gradle.mustache", "", "settings.gradle"));
         supportingFiles.add(new SupportingFile("README.mustache", "", "README.md"));
         supportingFiles.add(new SupportingFile("openapi.mustache",
                 ("src/main/resources/META-INF").replace("/", java.io.File.separator), "openapi.yml"));
@@ -127,17 +131,14 @@ public class JavaHelidonServerCodegen extends JavaHelidonCommonCodegen {
         }
         writePropertyBack(USE_BEANVALIDATION, useBeanValidation);
 
-        importMapping.put("Handler", "io.helidon.webserver.Handler");
-        importMapping.put("Map", "java.util.Map");
-        importMapping.put("HashMap", "java.util.HashMap");
-        importMapping.put("InputStream", "java.io.InputStream");
-        importMapping.put("ReadableBodyPart", "io.helidon.media.multipart.ReadableBodyPart");
-        importMapping.put("ArrayList", "java.util.ArrayList");
-        importMapping.put("ByteArrayOutputStream", "java.io.ByteArrayOutputStream");
-        importMapping.put("DataChunk", "io.helidon.common.http.DataChunk");
-        importMapping.put("UncheckedIOException", "java.io.UncheckedIOException");
-        importMapping.put("IOException", "java.io.IOException");
-        importMapping.put("ByteArrayInputStream", "java.io.ByteArrayInputStream");
+        //TODO remove isLibrary(HELIDON_SE) after interfaceOnly will be implemented in Helidon MP
+        if (additionalProperties.containsKey(INTERFACE_ONLY) && isLibrary(HELIDON_SE)) {
+            interfaceOnly = Boolean.parseBoolean(additionalProperties.get(INTERFACE_ONLY).toString());
+        }
+
+        if (!interfaceOnly) {
+            additionalProperties.remove(INTERFACE_ONLY);
+        }
 
         if (!additionalProperties.containsKey(MICROPROFILE_ROOT_PACKAGE_PROPERTY)) {
             additionalProperties.put(MICROPROFILE_ROOT_PACKAGE_PROPERTY, MICROPROFILE_REST_CLIENT_DEFAULT_ROOT_PACKAGE);
@@ -161,17 +162,33 @@ public class JavaHelidonServerCodegen extends JavaHelidonCommonCodegen {
             supportingFiles.add(new SupportingFile("beans.xml.mustache", metaInfFolder, "beans.xml"));
         } else if (isLibrary(HELIDON_SE)) {
             artifactId = "openapi-helidon-se-server";
-            supportingFiles.add(new SupportingFile("application.mustache",
-                    ("src.main.resources").replace(".", java.io.File.separator), "application.yaml"));
-            supportingFiles.add(new SupportingFile("mainTest.mustache",
-                    (testFolder + File.separator + invokerPackage).replace(".", java.io.File.separator),
-                    "MainTest.java"));
-            supportingFiles.add(new SupportingFile("main.mustache",
-                    (sourceFolder + File.separator + invokerPackage).replace(".", java.io.File.separator),
-                    "Main.java"));
-            supportingFiles.add(new SupportingFile("validatorUtils.mustache",
-                    (sourceFolder + File.separator + apiPackage).replace(".", java.io.File.separator),
-                    "ValidatorUtils.java"));
+            if (!interfaceOnly) {
+                supportingFiles.add(new SupportingFile("application.mustache",
+                        ("src.main.resources").replace(".", java.io.File.separator), "application.yaml"));
+                supportingFiles.add(new SupportingFile("mainTest.mustache",
+                        (testFolder + File.separator + invokerPackage).replace(".", java.io.File.separator),
+                        "MainTest.java"));
+                supportingFiles.add(new SupportingFile("main.mustache",
+                        (sourceFolder + File.separator + invokerPackage).replace(".", java.io.File.separator),
+                        "Main.java"));
+                supportingFiles.add(new SupportingFile("validatorUtils.mustache",
+                        (sourceFolder + File.separator + apiPackage).replace(".", java.io.File.separator),
+                        "ValidatorUtils.java"));
+                importMapping.put("Map", "java.util.Map");
+                importMapping.put("HashMap", "java.util.HashMap");
+                importMapping.put("InputStream", "java.io.InputStream");
+                importMapping.put("ReadableBodyPart", "io.helidon.media.multipart.ReadableBodyPart");
+                importMapping.put("ArrayList", "java.util.ArrayList");
+                importMapping.put("ByteArrayOutputStream", "java.io.ByteArrayOutputStream");
+                importMapping.put("DataChunk", "io.helidon.common.http.DataChunk");
+                importMapping.put("UncheckedIOException", "java.io.UncheckedIOException");
+                importMapping.put("IOException", "java.io.IOException");
+                importMapping.put("ByteArrayInputStream", "java.io.ByteArrayInputStream");
+            }
+            importMapping.put("Handler", "io.helidon.webserver.Handler");
+            //TODO after adding gradle support for Helidon MP move these 2 lines from this clause to the top of the method
+            supportingFiles.add(new SupportingFile("build.gradle.mustache", "", "build.gradle"));
+            supportingFiles.add(new SupportingFile("settings.gradle.mustache", "", "settings.gradle"));
         } else if (isLibrary(HELIDON_NIMA)) {
             throw new UnsupportedOperationException("Not implemented");
         } else if (isLibrary(HELIDON_NIMA_ANNOTATIONS)) {
@@ -215,13 +232,10 @@ public class JavaHelidonServerCodegen extends JavaHelidonCommonCodegen {
             if (codegenOperation.bodyParam != null) {
                 codegenOperation.imports.add("Handler");
             }
-            if (codegenOperation.pathParams.size() > 0) {
-                codegenOperation.imports.add("Objects");
-            }
-            if (codegenOperation.queryParams.size() > 0) {
+            if (codegenOperation.queryParams.size() > 0 && !interfaceOnly) {
                 codegenOperation.imports.add("List");
             }
-            if (codegenOperation.formParams.size() > 0) {
+            if (codegenOperation.formParams.size() > 0 && !interfaceOnly) {
                 codegenOperation.imports.add("Map");
                 codegenOperation.imports.add("HashMap");
                 codegenOperation.imports.add("InputStream");
