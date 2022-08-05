@@ -22,6 +22,10 @@ import io.helidon.webserver.Service;
 {{^interfaceOnly}}
 
     protected static final Logger LOGGER = Logger.getLogger({{classname}}.class.getName());
+{{#jackson}}
+    private static final ObjectMapper MAPPER = JsonProvider.objectMapper();{{/jackson}}
+{{#jsonb}}
+    private static final Jsonb JSONB = JsonbBuilder.create();{{/jsonb}}
     protected final Config config;
 
     public {{classname}}(Config config) {
