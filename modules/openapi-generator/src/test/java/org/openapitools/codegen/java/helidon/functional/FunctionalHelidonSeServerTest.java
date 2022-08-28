@@ -34,16 +34,9 @@ public class FunctionalHelidonSeServerTest extends FunctionalBase {
     }
 
     @Test
-    void buildPetstoreWithInterfaceOnly() {
+    void buildPetstoreWithAbstractClasses() {
         inputSpec("src/test/resources/3_0/petstore.yaml");
-        generate(createConfigurator().addAdditionalProperty(FunctionalBase.INTERFACE_ONLY, "true"));
-        buildAndVerify("target/openapi-java-server.jar");
-    }
-
-    @Test
-    void buildPetstoreWithFullProject() {
-        inputSpec("src/test/resources/3_0/petstore.yaml");
-        generate(createConfigurator().addAdditionalProperty("fullProject", "true"));
+        generate(createConfigurator().addAdditionalProperty(FunctionalBase.USE_ABSTRACT_CLASS, "true"));
         buildAndVerify("target/openapi-java-server.jar");
     }
 }

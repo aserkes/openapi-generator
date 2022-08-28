@@ -46,14 +46,18 @@ public class JavaHelidonServerCodegen extends JavaHelidonCommonCodegen {
     private final Logger LOGGER = LoggerFactory.getLogger(JavaHelidonServerCodegen.class);
 
     public static final String INTERFACE_ONLY = "interfaceOnly";
+    public static final String USE_ABSTRACT_CLASS = "useAbstractClass";
     public static final String FULL_PROJECT = "fullProject";
+    public static final String GRADLE_PROJECT = "gradleProject";
 
     protected boolean useBeanValidation = true;
     protected String implFolder = "src/main/java";
     protected String serializationLibrary = null;
 
     private boolean interfaceOnly = false;
+    private boolean useAbstractClass = false;
     private boolean fullProject = false;
+    private boolean gradleProject = false;
 
     public JavaHelidonServerCodegen() {
         super();
@@ -82,6 +86,10 @@ public class JavaHelidonServerCodegen extends JavaHelidonCommonCodegen {
                 "Whether to generate only API interface stubs without the server files.", interfaceOnly));
         cliOptions.add(CliOption.newBoolean(FULL_PROJECT,
                 "Whether to generate full project with registered services and configured routing.", fullProject));
+        cliOptions.add(CliOption.newBoolean(USE_ABSTRACT_CLASS,
+                "Whether to generate abstract classes for REST API instead of interfaces.", useAbstractClass));
+        cliOptions.add(CliOption.newBoolean(GRADLE_PROJECT,
+                "Whether to generate gradle project instead of maven.", gradleProject));
 
         // clear model and api doc template as this codegen
         // does not support auto-generated markdown doc at the moment
@@ -123,7 +131,8 @@ public class JavaHelidonServerCodegen extends JavaHelidonCommonCodegen {
         supportingFiles.clear();
         dateLibrary = "java8";
 
-        supportingFiles.add(new SupportingFile("pom.mustache", "", "pom.xml"));
+        SupportingFile pomFile = new SupportingFile("pom.mustache", "", "pom.xml");
+        supportingFiles.add(pomFile);
         supportingFiles.add(new SupportingFile("README.mustache", "", "README.md"));
         supportingFiles.add(new SupportingFile("openapi.mustache",
                 ("src/main/resources/META-INF").replace("/", java.io.File.separator), "openapi.yml"));
@@ -147,6 +156,20 @@ public class JavaHelidonServerCodegen extends JavaHelidonCommonCodegen {
         }
         if (!interfaceOnly) {
             additionalProperties.remove(INTERFACE_ONLY);
+        }
+
+        if (additionalProperties.containsKey(USE_ABSTRACT_CLASS)) {
+            useAbstractClass = Boolean.parseBoolean(additionalProperties.get(USE_ABSTRACT_CLASS).toString());
+        }
+        if (!useAbstractClass) {
+            additionalProperties.remove(USE_ABSTRACT_CLASS);
+        }
+
+        if (additionalProperties.containsKey(GRADLE_PROJECT)) {
+            gradleProject = Boolean.parseBoolean(additionalProperties.get(GRADLE_PROJECT).toString());
+        }
+        if (!gradleProject) {
+            additionalProperties.remove(GRADLE_PROJECT);
         }
 
         if (additionalProperties.containsKey(FULL_PROJECT)) {
@@ -178,6 +201,8 @@ public class JavaHelidonServerCodegen extends JavaHelidonCommonCodegen {
             supportingFiles.add(new SupportingFile("beans.xml.mustache", metaInfFolder, "beans.xml"));
         } else if (isLibrary(HELIDON_SE)) {
             artifactId = "openapi-helidon-se-server";
+            //TODO move this line from this clause if MP will support it
+            apiTemplateFiles.put("apiImpl.mustache", "Impl.java");
             if (!interfaceOnly) {
                 supportingFiles.add(new SupportingFile("application.mustache",
                         ("src.main.resources").replace(".", java.io.File.separator), "application.yaml"));
@@ -190,6 +215,8 @@ public class JavaHelidonServerCodegen extends JavaHelidonCommonCodegen {
                 supportingFiles.add(new SupportingFile("validatorUtils.mustache",
                         (sourceFolder + File.separator + apiPackage).replace(".", java.io.File.separator),
                         "ValidatorUtils.java"));
+            }
+            if (useAbstractClass) {
                 importMapping.put("Map", "java.util.Map");
                 importMapping.put("HashMap", "java.util.HashMap");
                 importMapping.put("InputStream", "java.io.InputStream");
@@ -202,9 +229,12 @@ public class JavaHelidonServerCodegen extends JavaHelidonCommonCodegen {
                 importMapping.put("ByteArrayInputStream", "java.io.ByteArrayInputStream");
             }
             importMapping.put("Handler", "io.helidon.webserver.Handler");
-            //TODO after adding gradle support for Helidon MP move these 2 lines from this clause to the top of the method
-            supportingFiles.add(new SupportingFile("build.gradle.mustache", "", "build.gradle"));
-            supportingFiles.add(new SupportingFile("settings.gradle.mustache", "", "settings.gradle"));
+            //TODO after adding gradle support for Helidon MP move these lines from this clause to the top of the method
+            if (gradleProject) {
+                supportingFiles.add(new SupportingFile("build.gradle.mustache", "", "build.gradle"));
+                supportingFiles.add(new SupportingFile("settings.gradle.mustache", "", "settings.gradle"));
+                supportingFiles.remove(pomFile);
+            }
         } else if (isLibrary(HELIDON_NIMA)) {
             throw new UnsupportedOperationException("Not implemented");
         } else if (isLibrary(HELIDON_NIMA_ANNOTATIONS)) {
@@ -260,10 +290,10 @@ public class JavaHelidonServerCodegen extends JavaHelidonCommonCodegen {
             if (codegenOperation.bodyParam != null) {
                 codegenOperation.imports.add("Handler");
             }
-            if (codegenOperation.queryParams.size() > 0 && !interfaceOnly) {
+            if (codegenOperation.queryParams.size() > 0 && useAbstractClass) {
                 codegenOperation.imports.add("List");
             }
-            if (codegenOperation.formParams.size() > 0 && !interfaceOnly) {
+            if (codegenOperation.formParams.size() > 0 && useAbstractClass) {
                 codegenOperation.imports.add("Map");
                 codegenOperation.imports.add("HashMap");
                 codegenOperation.imports.add("InputStream");
