@@ -47,7 +47,6 @@ public class JavaHelidonServerCodegen extends JavaHelidonCommonCodegen {
 
     public static final String INTERFACE_ONLY = "interfaceOnly";
     public static final String USE_ABSTRACT_CLASS = "useAbstractClass";
-    public static final String FULL_PROJECT = "fullProject";
     public static final String GRADLE_PROJECT = "gradleProject";
 
     protected boolean useBeanValidation = true;
@@ -84,8 +83,6 @@ public class JavaHelidonServerCodegen extends JavaHelidonCommonCodegen {
         cliOptions.add(CliOption.newBoolean(PERFORM_BEANVALIDATION, "Perform BeanValidation"));
         cliOptions.add(CliOption.newBoolean(INTERFACE_ONLY,
                 "Whether to generate only API interface stubs without the server files.", interfaceOnly));
-        cliOptions.add(CliOption.newBoolean(FULL_PROJECT,
-                "Whether to generate full project with registered services and configured routing.", fullProject));
         cliOptions.add(CliOption.newBoolean(USE_ABSTRACT_CLASS,
                 "Whether to generate abstract classes for REST API instead of interfaces.", useAbstractClass));
         cliOptions.add(CliOption.newBoolean(GRADLE_PROJECT,
