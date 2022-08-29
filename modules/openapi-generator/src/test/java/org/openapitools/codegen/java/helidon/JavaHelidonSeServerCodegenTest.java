@@ -47,7 +47,7 @@ public class JavaHelidonSeServerCodegenTest {
 
 
     @Test
-    public void doGenerateFullProject() {
+    public void testGenerateFullProject() {
         generator.generate();
 
         JavaFileAssert.assertThat(Paths.get(outputPath + "/src/main/java/org/openapitools/server/api/PetServiceImpl.java"))
@@ -63,7 +63,7 @@ public class JavaHelidonSeServerCodegenTest {
     }
 
     @Test
-    public void doGenerateProjectByDefault() {
+    public void testGenerateProjectByDefault() {
         generator.generate();
 
         JavaFileAssert.assertThat(Paths.get(outputPath + "/src/main/java/org/openapitools/server/api/PetService.java"))
@@ -90,25 +90,7 @@ public class JavaHelidonSeServerCodegenTest {
     }
 
     @Test
-    public void doGenerateInterfaceOnly() {
-        Map<String, Object> additionalProperties = new HashMap<>();
-        additionalProperties.put("interfaceOnly", true);
-        final CodegenConfigurator configurator = codegenConfigurator(additionalProperties);
-        generator.opts(configurator.toClientOptInput()).generate();
-
-        JavaFileAssert.assertThat(Paths.get(outputPath + "/src/main/java/org/openapitools/server/api/PetService.java"))
-                      .fileContains(
-                              "public interface PetService extends Service",
-                              "default void update(Routing.Rules rules)",
-                              "void deletePet(ServerRequest request, ServerResponse response);"
-                      );
-        TestUtils.assertFileNotExists(Paths.get(outputPath + "/src/main/java/org/openapitools/server/Main.java"));
-        TestUtils.assertFileNotContains(Paths.get(outputPath + "/pom.xml"), "<mainClass>org.openapitools.server" +
-                ".Main</mainClass>");
-    }
-
-    @Test
-    public void doGeneratePathParams() throws IOException {
+    public void testGeneratePathParams() throws IOException {
         Map<String, Object> additionalProperties = new HashMap<>();
         additionalProperties.put("useAbstractClass", true);
         final CodegenConfigurator configurator = codegenConfigurator(additionalProperties);
@@ -131,7 +113,7 @@ public class JavaHelidonSeServerCodegenTest {
     }
 
     @Test
-    public void doGenerateQueryParams() throws IOException {
+    public void testGenerateQueryParams() throws IOException {
         Map<String, Object> additionalProperties = new HashMap<>();
         additionalProperties.put("useAbstractClass", true);
         final CodegenConfigurator configurator = codegenConfigurator(additionalProperties);
@@ -155,7 +137,7 @@ public class JavaHelidonSeServerCodegenTest {
     }
 
     @Test
-    public void doGenerateBodyParams() throws IOException {
+    public void testGenerateBodyParams() throws IOException {
         Map<String, Object> additionalProperties = new HashMap<>();
         additionalProperties.put("useAbstractClass", true);
         final CodegenConfigurator configurator = codegenConfigurator(additionalProperties);
@@ -206,7 +188,7 @@ public class JavaHelidonSeServerCodegenTest {
     }
 
     @Test
-    public void doGenerateHeaderParams() throws IOException {
+    public void testGenerateHeaderParams() throws IOException {
         Map<String, Object> additionalProperties = new HashMap<>();
         additionalProperties.put("useAbstractClass", true);
         final CodegenConfigurator configurator = codegenConfigurator(additionalProperties);
@@ -222,7 +204,7 @@ public class JavaHelidonSeServerCodegenTest {
     }
 
     @Test
-    public void doGenerateCookiesParams() throws IOException {
+    public void testGenerateCookiesParams() throws IOException {
         Map<String, Object> additionalProperties = new HashMap<>();
         additionalProperties.put("useAbstractClass", true);
         final CodegenConfigurator configurator = codegenConfigurator(additionalProperties);
@@ -244,7 +226,7 @@ public class JavaHelidonSeServerCodegenTest {
     }
 
     @Test
-    public void doGenerateFormParams() throws IOException {
+    public void testGenerateFormParams() throws IOException {
         Map<String, Object> additionalProperties = new HashMap<>();
         additionalProperties.put("useAbstractClass", true);
         final CodegenConfigurator configurator = codegenConfigurator(additionalProperties);
@@ -275,7 +257,7 @@ public class JavaHelidonSeServerCodegenTest {
     }
 
     @Test
-    public void doGenerateParamsValidation() throws IOException {
+    public void testGenerateParamsValidation() throws IOException {
         Map<String, Object> additionalProperties = new HashMap<>();
         additionalProperties.put("useAbstractClass", true);
         final CodegenConfigurator configurator = codegenConfigurator(additionalProperties);
