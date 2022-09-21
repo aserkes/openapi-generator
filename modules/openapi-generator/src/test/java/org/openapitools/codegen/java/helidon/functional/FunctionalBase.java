@@ -149,7 +149,12 @@ abstract class FunctionalBase {
 
     protected int getCurrentJavaMajorVersion() {
         String[] versionElements = System.getProperty("java.version").split("\\.");
-        return Integer.parseInt(versionElements[0]);
+        int firstElement = Integer.parseInt(versionElements[0]);
+        if (firstElement == 1) {
+            return Integer.parseInt(versionElements[1]);
+        } else {
+            return firstElement;
+        }
     }
 
     /**
