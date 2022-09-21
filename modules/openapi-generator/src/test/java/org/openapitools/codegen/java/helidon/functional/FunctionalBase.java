@@ -59,6 +59,8 @@ abstract class FunctionalBase {
 
     protected static final String FULL_PROJECT = "fullProject";
     protected static final String USE_ABSTRACT_CLASS = "useAbstractClass";
+    protected static final String HELIDON_VERSION = "helidonVersion";
+    protected static int defaultMinJavaMajorVersion = 17;
 
     private String library;
     private String generatorName;
@@ -143,6 +145,11 @@ abstract class FunctionalBase {
         ProcessReader process = runMavenProcess(args);
         process.waitFor(10, TimeUnit.MINUTES);
         return process;
+    }
+
+    protected int getCurrentJavaMajorVersion() {
+        String[] versionElements = System.getProperty("java.version").split("\\.");
+        return Integer.parseInt(versionElements[0]);
     }
 
     /**
@@ -251,10 +258,25 @@ abstract class FunctionalBase {
 
     /**
      * Convenience method to build project using Maven and verify test output.
+     * <p>
+     * Minimal major java version for execution of this test will be equal to {@value #defaultMinJavaMajorVersion}
      *
      * @param jarPath path to expected jar file
      */
     protected void buildAndVerify(String jarPath) {
+        buildAndVerify(jarPath, defaultMinJavaMajorVersion);
+    }
+
+    /**
+     * Convenience method to build project using Maven and verify test output.
+     *
+     * @param jarPath path to expected jar file
+     * @param minRequiredJavaVersion minimal major java version to build project and run test
+     */
+    protected void buildAndVerify(String jarPath, int minRequiredJavaVersion) {
+        if (getCurrentJavaMajorVersion() < minRequiredJavaVersion) {
+            return;
+        }
         ProcessReader reader = runMavenProcessAndWait("package");
         Path executableJar = outputPath.resolve(jarPath);
         String output = reader.readOutputConsole();

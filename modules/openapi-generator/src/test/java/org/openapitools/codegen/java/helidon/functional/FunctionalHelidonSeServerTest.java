@@ -48,6 +48,13 @@ public class FunctionalHelidonSeServerTest extends FunctionalBase {
     }
 
     @Test
+    void buildPetstoreWithHelidonVersion2() {
+        inputSpec("src/test/resources/3_0/petstore.yaml");
+        generate(createConfigurator().addAdditionalProperty(FunctionalBase.HELIDON_VERSION, "2.5.2"));
+        buildAndVerify("target/openapi-java-server.jar", 11);
+    }
+
+    @Test
     void verifyFullProject() {
         inputSpec("src/test/resources/3_0/petstore.yaml");
 
